@@ -1,73 +1,59 @@
+package com.startup.healthyplate
+
 import android.os.Bundle
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import com.startup.healthyplate.*
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.startup.healthyplate.component.Scaffold
+import com.startup.healthyplate.navigation.Navigation
+import com.startup.healthyplate.navigation.Screen
+import com.startup.healthyplate.ui.theme.HealthyPlateTheme
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var healthyPlateApp: HealthyPlateApp
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Initialize HealthyPlateApp
-        healthyPlateApp = HealthyPlateApp()
-
-        // Add some food stalls to the app
-        val foodStall1 = FoodStall(
-            name = "Healthy Bites",
-            location = "123 Main Street",
-            nutritionalInfo = NutritionalInfo(
-                calories = 300,
-                protein = 20.5,
-                carbohydrates = 30.2,
-                fat = 10.1,
-                allergens = listOf("Nuts", "Soy")
-            )
-        )
-        healthyPlateApp.addFoodStall(foodStall1)
-
-        val foodStall2 = FoodStall(
-            name = "Fresh Greens",
-            location = "456 Elm Avenue",
-            nutritionalInfo = NutritionalInfo(
-                calories = 250,
-                protein = 15.2,
-                carbohydrates = 35.7,
-                fat = 8.6,
-                allergens = listOf("Gluten", "Dairy")
-            )
-        )
-        healthyPlateApp.addFoodStall(foodStall2)
-
-        // Example usage: Get nearby food stalls for a user's location
-        val userLocation = "789 Oak Road"
-        val nearbyFoodStalls = healthyPlateApp.getNearbyFoodStalls(userLocation)
-
-        // Display the nearby food stalls in a TextView
-        val foodStallsTextView = findViewById<TextView>(R.id.foodStallsTextView)
-        val foodStallsText = StringBuilder()
-        for (foodStall in nearbyFoodStalls) {
-            foodStallsText.append(foodStall.name).append("\n")
+        setContent {
+            HealthyPlateTheme {
+                // A surface container using the 'background' color from the theme
+                HealthyPlateComposeUIMain()
+            }
         }
+    }
 
-        foodStallsTextView.text = foodStallsText.toString()
+    @Composable
+    fun HealthyPlateComposeUIMain() {
+        HealthyPlateTheme {
+            Surface(
+                color = MaterialTheme.colors.background,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                Scaffold(
+                    navController = navController,
+                    showBottomBar = navBackStackEntry?.destination?.route in listOf(
+                        Screen.HomeScreen.route,
+                        Screen.FavoriteScreen.route,
+                        Screen.OrderScreen.route,
+                        Screen.ProfileScreen.route,
+                    ),
+                    modifier = Modifier.fillMaxSize(),
+                    onFabClick = {
+                        navController.navigate(Screen.SearchScreen.route)
+                    }
+                ) {
+                    Navigation(navController)
+                }
+            }
 
-        // Example usage: Filter food stalls based on user preferences
-        val userPreferences = UserPreferences(
-            diet = "Vegan",
-            healthCondition = "Diabetes",
-            lifeGoal = "Weight Loss",
-            maxCalories = 400
-        )
-        val filteredFoodStalls = healthyPlateApp.filterFoodStalls(userPreferences)
-
-        // Display the filtered food stalls in a TextView
-        val filteredFoodStallsTextView = findViewById<TextView>(R.id.filteredFoodStallsTextView)
-        val filteredFoodStallsText = StringBuilder()
-        for (foodStall in filteredFoodStalls) {
-            filteredFoodStallsText.append(foodStall.name).append("\n")
         }
-        filteredFoodStallsTextView.text = filteredFoodStallsText.toString()
     }
 }
+
